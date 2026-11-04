@@ -23,7 +23,7 @@ tags: [architecture, subsystem, l2, kafka, data-exchange]
 
 ## 2. Схема потоков
 
-![ПК ШД: поток событий от узла n к узлу X](../../_assets/scheme_7.svg)
+![ПК ШД: поток событий от узла n к узлу X](_assets/scheme_7.svg)
 
 ## 3. Компоненты и их функции
 
