@@ -28,7 +28,7 @@ tags: [architecture, howto, kafka]
 
 ## 2. Схема
 
-![Конфигурация Kafka на узле: узлы covu и uovu](../../_assets/scheme_4.svg)
+![Конфигурация Kafka на узле: узлы covu и uovu](_assets/scheme_4.svg)
 
 ## 3. Файлы конфигурации
 
