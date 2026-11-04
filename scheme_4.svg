@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 980" width="1000" height="980" style="background:#ffffff" font-family="Segoe UI, Arial, sans-serif">
+  <title>Конфигурация Kafka на узле: два узла covu и uovu</title>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/>
+    </marker>
+    <style>
+      .panel { fill:#f3f1ec; stroke:#9a958c; stroke-width:1.3; }
+      .vpn { fill:#f3f1ec; stroke:#9a958c; stroke-width:1.3; }
+      .bridge-a { fill:#f8c77a; stroke:#b07a2a; stroke-width:1.2; }
+      .bridge-b { fill:#a4e0c8; stroke:#2f8a63; stroke-width:1.2; }
+      .vm-a { fill:#e6f0fb; stroke:#4a78b0; stroke-width:1.2; }
+      .vm-b { fill:#e4f5ee; stroke:#2f8a63; stroke-width:1.2; }
+      .net { fill:none; stroke:#6f8fb5; stroke-width:1.1; stroke-dasharray:5 4; }
+      .box { fill:#ffffff; stroke:#4a4a4a; stroke-width:1.1; }
+      .lst { fill:#dce8f7; stroke:#6f8fb5; stroke-width:0.9; }
+      .ports { fill:#dcd8cf; stroke:#8a857c; stroke-width:1; }
+      .t { font-size:13px; fill:#1e1e1e; text-anchor:middle; }
+      .tb { font-size:14px; font-weight:600; fill:#1e1e1e; text-anchor:middle; }
+      .s { font-size:11px; fill:#444; text-anchor:middle; }
+      .m { font-family:Consolas, 'Courier New', monospace; font-size:10.5px; fill:#333; text-anchor:middle; }
+      .ml { font-family:Consolas, 'Courier New', monospace; font-size:10.5px; fill:#333; }
+      .mm2 { fill:none; stroke:#3f7a2a; stroke-width:1.8; stroke-dasharray:7 4; marker-end:url(#arr); }
+      .tinc { fill:none; stroke:#555; stroke-width:1.5; marker-end:url(#arr); marker-start:url(#arr); }
+      .kraft { fill:none; stroke:#2a4f8f; stroke-width:1.3; marker-end:url(#arr); marker-start:url(#arr); }
+      .lbl { font-size:11px; fill:#2f5f1f; paint-order:stroke; stroke:#ffffff; stroke-width:4px; stroke-linejoin:round; }
+      .note { font-size:11.5px; fill:#333; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="980" fill="#ffffff"/>
+
+  <!-- ===== VPN ===== -->
+  <rect class="vpn" x="60" y="20" width="880" height="110" rx="12"/>
+  <text class="tb" x="500" y="42">tinc VPN</text>
+  <rect x="90" y="70" width="130" height="32" rx="6" fill="#d4ccf3" stroke="#6a5bb0"/>
+  <text class="t" x="155" y="91">sovu</text>
+  <rect class="bridge-a" x="420" y="70" width="140" height="32" rx="6"/>
+  <text class="t" x="490" y="91">covu</text>
+  <rect class="bridge-b" x="760" y="70" width="140" height="32" rx="6"/>
+  <text class="t" x="830" y="91">uovu</text>
+  <path class="tinc" d="M222,92 H418"/>
+  <text class="s" x="320" y="80">sovu ↔ covu, UDP 655</text>
+  <path class="tinc" d="M562,92 H758"/>
+  <text class="s" x="660" y="80">covu ↔ uovu, UDP 655</text>
+  <text class="m" x="490" y="62">10.0.0.1: 9092 / 9192 (EXTERNAL)</text>
+  <text class="m" x="830" y="62">10.0.0.2: 9092 / 9192 (EXTERNAL)</text>
+
+  <!-- ===== Узел covu ===== -->
+  <rect class="panel" x="20" y="180" width="470" height="730" rx="12"/>
+  <text class="tb" x="255" y="204">Узел covu</text>
+  <rect class="bridge-a" x="40" y="218" width="430" height="46" rx="8"/>
+  <text class="t" x="255" y="237">vm-bridge (10.0.0.1)</text>
+  <text class="s" x="255" y="254">DNAT: :9092 → broker1, :9192 → broker2</text>
+  <path d="M255,264 V286" stroke="#8a5a1a" stroke-width="1.3" marker-end="url(#arr)"/>
+
+  <rect class="vm-a" x="40" y="288" width="430" height="610" rx="8"/>
+  <text class="t" x="255" y="308">docker-ВМ (стенд; целевое размещение — k8s, BL-032)</text>
+  <rect class="net" x="52" y="320" width="406" height="455" rx="6"/>
+  <text class="s" x="255" y="336">bridge: kafka-net</text>
+
+  <rect class="box" x="62" y="346" width="180" height="106" rx="6"/>
+  <text class="t" x="152" y="364">broker1 (kafka1)</text>
+  <rect class="lst" x="72" y="372" width="160" height="22" rx="4"/><text class="m" x="152" y="387">PLAINTEXT :29092</text>
+  <rect class="lst" x="72" y="398" width="160" height="22" rx="4"/><text class="m" x="152" y="413">EXTERNAL :9092</text>
+  <rect class="lst" x="72" y="424" width="160" height="22" rx="4"/><text class="m" x="152" y="439">CONTROLLER :9093</text>
+  <rect class="box" x="268" y="346" width="180" height="106" rx="6"/>
+  <text class="t" x="358" y="364">broker2 (kafka2)</text>
+  <rect class="lst" x="278" y="372" width="160" height="22" rx="4"/><text class="m" x="358" y="387">PLAINTEXT :29092</text>
+  <rect class="lst" x="278" y="398" width="160" height="22" rx="4"/><text class="m" x="358" y="413">EXTERNAL :9192</text>
+  <rect class="lst" x="278" y="424" width="160" height="22" rx="4"/><text class="m" x="358" y="439">CONTROLLER :9093</text>
+  <path class="kraft" d="M244,399 H266"/>
+  <text class="m" x="255" y="472">cp-kafka:7.6.1, KRaft; bootstrap: kafka1:29092,kafka2:29092</text>
+
+  <rect class="box" x="62" y="486" width="180" height="62" rx="6"/>
+  <text class="t" x="152" y="504">kafka-connect-mm2</text>
+  <text class="s" x="152" y="520">MM2: по коннектору на источник</text>
+  <text class="m" x="152" y="538">+ MirrorHeartbeat, :8083</text>
+  <rect class="box" x="268" y="486" width="180" height="62" rx="6"/>
+  <text class="t" x="358" y="504">kafka-connect-cdc</text>
+  <text class="s" x="358" y="520">Debezium, outbox</text>
+  <text class="m" x="358" y="538">:8083</text>
+
+  <rect class="box" x="62" y="560" width="180" height="62" rx="6"/>
+  <text class="t" x="152" y="578">outgoing</text>
+  <text class="s" x="152" y="594">Kafka Streams, маршрутизация</text>
+  <text class="m" x="152" y="612">→ sync.covu.&lt;след. узел&gt;</text>
+  <rect class="box" x="268" y="560" width="180" height="62" rx="6"/>
+  <text class="t" x="358" y="578">ingoing</text>
+  <text class="s" x="358" y="594">Kafka Streams, дедупликация</text>
+  <text class="m" x="358" y="612">sync.*.covu →</text>
+
+  <rect class="box" x="62" y="634" width="180" height="50" rx="6"/>
+  <text class="t" x="152" y="654">kafka-ui</text>
+  <text class="m" x="152" y="672">:8080</text>
+  <rect class="box" x="268" y="634" width="180" height="50" rx="6"/>
+  <text class="t" x="358" y="654">Образ Kafka Connect</text>
+  <text class="m" x="358" y="672">debezium/connect + OTel agent</text>
+
+  <text class="s" x="255" y="704">Телеметрия всех контейнеров — OTel → коллектор ПК УФ узла</text>
+  <text class="s" x="255" y="722">Топики: name_spo.name_io.action, sync.covu.*, sync.*.covu,</text>
+  <text class="s" x="255" y="738">pk_shd.transit, *.dlq, служебные _connect-mm2-*, _connect-cdc-*</text>
+  <text class="s" x="255" y="760">Kafka Connect MM2 и CDC — раздельные кластеры (ADR-0018)</text>
+
+  <rect class="ports" x="52" y="790" width="406" height="96" rx="6"/>
+  <text class="t" x="255" y="810">Порты docker-ВМ (видны vm-bridge)</text>
+  <text class="ml" x="66" y="832">9092 → broker1; 9192 → broker2</text>
+  <text class="ml" x="66" y="850">9093 / 9193 → контроллеры (публикация — TBD)</text>
+  <text class="ml" x="66" y="868">8083 → connect-mm2; 8084 → connect-cdc</text>
+  <text class="ml" x="66" y="882">8080 → kafka-ui (доступ — Q-029)</text>
+
+  <!-- ===== Узел uovu ===== -->
+  <rect class="panel" x="510" y="180" width="470" height="730" rx="12"/>
+  <text class="tb" x="745" y="204">Узел uovu</text>
+  <rect class="bridge-b" x="530" y="218" width="430" height="46" rx="8"/>
+  <text class="t" x="745" y="237">vm-bridge (10.0.0.2)</text>
+  <text class="s" x="745" y="254">DNAT: :9092 → broker1, :9192 → broker2</text>
+  <path d="M745,264 V286" stroke="#2f8a63" stroke-width="1.3" marker-end="url(#arr)"/>
+
+  <rect class="vm-b" x="530" y="288" width="430" height="610" rx="8"/>
+  <text class="t" x="745" y="308">docker-ВМ (стенд; целевое размещение — k8s, BL-032)</text>
+  <rect class="net" x="542" y="320" width="406" height="455" rx="6"/>
+  <text class="s" x="745" y="336">bridge: kafka-net</text>
+
+  <rect class="box" x="552" y="346" width="180" height="106" rx="6"/>
+  <text class="t" x="642" y="364">broker1 (kafka1)</text>
+  <rect class="lst" x="562" y="372" width="160" height="22" rx="4"/><text class="m" x="642" y="387">PLAINTEXT :29092</text>
+  <rect class="lst" x="562" y="398" width="160" height="22" rx="4"/><text class="m" x="642" y="413">EXTERNAL :9092</text>
+  <rect class="lst" x="562" y="424" width="160" height="22" rx="4"/><text class="m" x="642" y="439">CONTROLLER :9093</text>
+  <rect class="box" x="758" y="346" width="180" height="106" rx="6"/>
+  <text class="t" x="848" y="364">broker2 (kafka2)</text>
+  <rect class="lst" x="768" y="372" width="160" height="22" rx="4"/><text class="m" x="848" y="387">PLAINTEXT :29092</text>
+  <rect class="lst" x="768" y="398" width="160" height="22" rx="4"/><text class="m" x="848" y="413">EXTERNAL :9192</text>
+  <rect class="lst" x="768" y="424" width="160" height="22" rx="4"/><text class="m" x="848" y="439">CONTROLLER :9093</text>
+  <path class="kraft" d="M734,399 H756"/>
+  <text class="m" x="745" y="472">cp-kafka:7.6.1, KRaft; bootstrap: kafka1:29092,kafka2:29092</text>
+
+  <rect class="box" x="552" y="486" width="180" height="62" rx="6"/>
+  <text class="t" x="642" y="504">kafka-connect-mm2</text>
+  <text class="s" x="642" y="520">MM2: по коннектору на источник</text>
+  <text class="m" x="642" y="538">+ MirrorHeartbeat, :8083</text>
+  <rect class="box" x="758" y="486" width="180" height="62" rx="6"/>
+  <text class="t" x="848" y="504">kafka-connect-cdc</text>
+  <text class="s" x="848" y="520">Debezium, outbox</text>
+  <text class="m" x="848" y="538">:8083</text>
+
+  <rect class="box" x="552" y="560" width="180" height="62" rx="6"/>
+  <text class="t" x="642" y="578">outgoing</text>
+  <text class="s" x="642" y="594">Kafka Streams, маршрутизация</text>
+  <text class="m" x="642" y="612">→ sync.uovu.&lt;след. узел&gt;</text>
+  <rect class="box" x="758" y="560" width="180" height="62" rx="6"/>
+  <text class="t" x="848" y="578">ingoing</text>
+  <text class="s" x="848" y="594">Kafka Streams, дедупликация</text>
+  <text class="m" x="848" y="612">sync.*.uovu →</text>
+
+  <rect class="box" x="552" y="634" width="180" height="50" rx="6"/>
+  <text class="t" x="642" y="654">kafka-ui</text>
+  <text class="m" x="642" y="672">:8080</text>
+  <rect class="box" x="758" y="634" width="180" height="50" rx="6"/>
+  <text class="t" x="848" y="654">Образ Kafka Connect</text>
+  <text class="m" x="848" y="672">debezium/connect + OTel agent</text>
+
+  <text class="s" x="745" y="704">Телеметрия всех контейнеров — OTel → коллектор ПК УФ узла</text>
+  <text class="s" x="745" y="722">Топики: name_spo.name_io.action, sync.uovu.*, sync.*.uovu,</text>
+  <text class="s" x="745" y="738">pk_shd.transit, *.dlq, служебные _connect-mm2-*, _connect-cdc-*</text>
+  <text class="s" x="745" y="760">Kafka Connect MM2 и CDC — раздельные кластеры (ADR-0018)</text>
+
+  <rect class="ports" x="542" y="790" width="406" height="96" rx="6"/>
+  <text class="t" x="745" y="810">Порты docker-ВМ (видны vm-bridge)</text>
+  <text class="ml" x="556" y="832">9092 → broker1; 9192 → broker2</text>
+  <text class="ml" x="556" y="850">9093 / 9193 → контроллеры (публикация — TBD)</text>
+  <text class="ml" x="556" y="868">8083 → connect-mm2; 8084 → connect-cdc</text>
+  <text class="ml" x="556" y="882">8080 → kafka-ui (доступ — Q-029)</text>
+
+  <!-- ===== MM2 (pull на узле-получателе) ===== -->
+  <path class="mm2" d="M552,530 H500 V104"/>
+  <text class="lbl" x="300" y="172">MM2 uovu забирает sync.covu.uovu</text>
+  <path class="mm2" d="M62,530 H30 V150 H830 V104"/>
+  <text class="lbl" x="640" y="145">MM2 covu забирает sync.uovu.covu</text>
+
+  <!-- Легенда -->
+  <path class="mm2" d="M60,935 H110"/>
+  <text class="note" x="118" y="939">MM2: коннектор на узле-получателе читает из EXTERNAL узла-источника через VPN (IdentityReplicationPolicy, ADR-0027)</text>
+  <path class="kraft" d="M60,960 H110"/>
+  <text class="note" x="118" y="964">KRaft между брокерами узла</text>
+  <path class="tinc" d="M330,960 H380"/>
+  <text class="note" x="388" y="964">tinc mesh VPN (BL-010)</text>
+</svg>

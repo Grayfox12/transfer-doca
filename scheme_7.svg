@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 1170" width="1300" height="1170" style="background:#ffffff" font-family="Segoe UI, Arial, sans-serif">
+  <title>ПК ШД: поток событий и маршрутизация между узлами</title>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3a3a3a"/>
+    </marker>
+    <style>
+      .grp { stroke:#9a9a9a; stroke-width:1.2; }
+      .grp-title { font-size:15px; font-weight:600; fill:#222; }
+      .box { fill:#ffffff; stroke:#4a4a4a; stroke-width:1.3; }
+      .src { fill:#dfe9ff; }
+      .box-text { font-size:13px; fill:#1e1e1e; text-anchor:middle; }
+      .sub { font-size:11.5px; fill:#555; text-anchor:middle; }
+      .mono { font-family:Consolas, 'Courier New', monospace; font-size:11px; fill:#444; text-anchor:middle; }
+      .mono-l { font-family:Consolas, 'Courier New', monospace; font-size:11px; fill:#444; }
+      .edge { fill:none; stroke:#3a3a3a; stroke-width:1.5; marker-end:url(#arr); }
+      .line { fill:none; stroke:#3a3a3a; stroke-width:1.5; }
+      .alt { stroke-dasharray:6 4; stroke:#777; }
+      .no { fill:none; stroke:#b04040; stroke-width:1.4; stroke-dasharray:5 4; }
+      .lbl { font-size:11.5px; fill:#1f3f8f; paint-order:stroke; stroke:#ffffff; stroke-width:4px; stroke-linejoin:round; }
+      .lbl-no { font-size:11.5px; fill:#9a2f2f; text-anchor:middle; paint-order:stroke; stroke:#ffffff; stroke-width:4px; stroke-linejoin:round; }
+      .lbl-c { font-size:11.5px; fill:#1f3f8f; text-anchor:middle; paint-order:stroke; stroke:#ffffff; stroke-width:4px; stroke-linejoin:round; }
+      .note { font-size:12.5px; fill:#333; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1300" height="1170" fill="#ffffff"/>
+  <text x="20" y="34" font-size="18" font-weight="700" fill="#111">ПК ШД: поток событий от узла n к узлу X</text>
+
+  <!-- ===== Узел n ===== -->
+  <rect class="grp" x="20" y="60" width="600" height="540" rx="10" fill="#eef4ff"/>
+  <text class="grp-title" x="34" y="84">Узел n (источник)</text>
+
+  <rect class="box" x="50" y="100" width="200" height="45" rx="6"/>
+  <text class="box-text" x="150" y="120">СПО-владелец</text>
+  <text class="sub" x="150" y="137">БД: данные + outbox</text>
+
+  <rect class="box" x="50" y="175" width="200" height="60" rx="6"/>
+  <text class="box-text" x="150" y="196">Kafka Connect CDC</text>
+  <text class="sub" x="150" y="213">Debezium: x-origin, x-message-id</text>
+  <text class="mono" x="150" y="228">debezium/connect</text>
+
+  <rect class="box" x="50" y="330" width="200" height="90" rx="6"/>
+  <text class="box-text" x="150" y="352">Outgoing Kafka Streams</text>
+  <text class="sub" x="150" y="370">маршрутизация: правила,</text>
+  <text class="sub" x="150" y="386">каналы, x-targets, x-visited</text>
+  <text class="mono" x="150" y="407">свой образ, Debian 12</text>
+
+  <rect class="box" x="50" y="510" width="200" height="45" rx="6"/>
+  <text class="box-text" x="150" y="530">Kafka UI</text>
+  <text class="sub" x="150" y="547">доступ администратора</text>
+
+  <rect class="grp" x="290" y="100" width="310" height="450" rx="8" fill="#fff5e6"/>
+  <text class="grp-title" x="304" y="124">Kafka узла n (KRaft)</text>
+  <text class="mono-l" x="304" y="142">cp-kafka:7.6.1, 2 брокера</text>
+
+  <rect class="box" x="310" y="175" width="270" height="60" rx="6"/>
+  <text class="box-text" x="445" y="199">Внутренние топики</text>
+  <text class="mono" x="445" y="219">name_spo.name_io.action</text>
+
+  <rect class="box" x="310" y="255" width="270" height="50" rx="6"/>
+  <text class="box-text" x="445" y="276">Транзит</text>
+  <text class="mono" x="445" y="294">pk_shd.transit</text>
+
+  <rect class="box" x="310" y="375" width="270" height="60" rx="6"/>
+  <text class="box-text" x="445" y="399">Исходящие топики</text>
+  <text class="mono" x="445" y="419">sync.n.&lt;след. узел&gt; (по каналам)</text>
+
+  <rect class="box" x="310" y="470" width="270" height="60" rx="6"/>
+  <text class="box-text" x="445" y="492">DLQ (сбойные сообщения)</text>
+  <text class="mono" x="445" y="511">name_spo.name_io.dlq</text>
+  <text class="mono" x="445" y="525">pk_shd.node.dlq</text>
+
+  <path class="edge" d="M150,145 V175"/>
+  <path class="edge" d="M250,205 H310"/>
+  <text class="lbl" x="262" y="198">CDC</text>
+  <path class="line" d="M310,280 H280"/>
+  <path class="edge" d="M310,222 H280 V312 H150 V330"/>
+  <text class="lbl" x="170" y="306">читает</text>
+  <path class="edge" d="M250,405 H310"/>
+  <text class="lbl" x="258" y="397">пишет</text>
+  <path class="edge alt" d="M250,532 H290"/>
+
+  <!-- VPN -->
+  <rect x="632" y="100" width="56" height="450" rx="6" fill="#f2f2f2" stroke="#9a9a9a" stroke-dasharray="5 4"/>
+  <text class="sub" transform="translate(664,250) rotate(-90)">VPN (Tinc), vm-bridge: 9092 / 9192</text>
+
+  <!-- ===== Узел X ===== -->
+  <rect class="grp" x="700" y="60" width="580" height="540" rx="10" fill="#edf8ef"/>
+  <text class="grp-title" x="714" y="84">Узел X (получатель)</text>
+
+  <rect class="box" x="720" y="100" width="240" height="50" rx="6"/>
+  <text class="box-text" x="840" y="121">База дедупликации</text>
+  <text class="sub" x="840" y="139">по x-message-id, state store (Q-019)</text>
+
+  <rect class="box" x="720" y="185" width="240" height="85" rx="6"/>
+  <text class="box-text" x="840" y="207">Ingoing Kafka Streams</text>
+  <text class="sub" x="840" y="225">дедупликация, x-visited;</text>
+  <text class="sub" x="840" y="241">нужное узлу / транзит</text>
+  <text class="mono" x="840" y="260">свой образ, Debian 12</text>
+
+  <rect class="box" x="720" y="370" width="240" height="80" rx="6"/>
+  <text class="box-text" x="840" y="392">Kafka Connect MM2 узла X</text>
+  <text class="sub" x="840" y="410">MM2: MirrorSourceConnector</text>
+  <text class="mono" x="840" y="428">коннектор mirror-n-to-X</text>
+  <text class="mono" x="840" y="443">IdentityReplicationPolicy</text>
+
+  <rect class="grp" x="980" y="100" width="280" height="440" rx="8" fill="#fff5e6"/>
+  <text class="grp-title" x="994" y="124">Kafka узла X (KRaft)</text>
+  <text class="mono-l" x="994" y="142">cp-kafka:7.6.1, 2 брокера</text>
+
+  <rect class="box" x="995" y="175" width="250" height="60" rx="6"/>
+  <text class="box-text" x="1120" y="199">Внутренние топики</text>
+  <text class="mono" x="1120" y="219">name_spo.name_io.action</text>
+
+  <rect class="box" x="995" y="255" width="250" height="50" rx="6"/>
+  <text class="box-text" x="1120" y="276">Транзит</text>
+  <text class="mono" x="1120" y="294">pk_shd.transit → Outgoing X</text>
+
+  <rect class="box" x="995" y="375" width="250" height="60" rx="6"/>
+  <text class="box-text" x="1120" y="399">Входящий топик от n</text>
+  <text class="mono" x="1120" y="419">sync.n.X  (то же имя)</text>
+
+  <rect class="box" x="995" y="470" width="250" height="55" rx="6"/>
+  <text class="box-text" x="1120" y="492">DLQ</text>
+  <text class="mono" x="1120" y="511">как на узле n</text>
+
+  <rect class="box" x="995" y="552" width="250" height="38" rx="6"/>
+  <text class="box-text" x="1120" y="576">СПО узла X (потребители)</text>
+
+  <path class="edge" d="M580,405 H720"/>
+  <text class="lbl" x="594" y="428">MM2 забирает (pull)</text>
+  <path class="edge" d="M960,410 H995"/>
+  <path class="edge" d="M1010,375 V330 H880 V270"/>
+  <text class="lbl" x="890" y="325">читает sync.*.X</text>
+  <path class="edge" d="M960,205 H995"/>
+  <path class="edge" d="M960,262 H995"/>
+  <path class="edge alt" d="M840,185 V150" style="marker-start:url(#arr)"/>
+  <path class="edge" d="M1245,205 H1272 V571 H1245"/>
+
+  <!-- Примечания -->
+  <text class="note" x="20" y="628">• Обратное направление X → n симметрично: на каждом узле Outgoing, Ingoing и MM2-коннектор на каждый узел-источник; Kafka Connect MM2 и CDC — раздельные кластеры (ADR-0018).</text>
+  <text class="note" x="20" y="650">• sync.n.X заводится, только если с n нужно передавать на X; следующий узел Outgoing выбирает по правилам (ADR-0025); x-origin и x-message-id — ADR-0024; заголовки — ADR-0022.</text>
+  <text class="note" x="20" y="672">• Гарантии, сроки хранения sync и DLQ — ADR-0021. Kafka UI — на каждом узле (ADR-0014). Телеметрия — в ПК УФ своего узла (BL-035, BL-044, BL-081, ADR-0017).</text>
+
+  <!-- ===== Маршрутизация ===== -->
+  <text x="20" y="722" font-size="18" font-weight="700" fill="#111">Маршрутизация между узлами (ADR-0025, BL-087)</text>
+
+  <!-- Левая панель: событие РАЙОНА -->
+  <rect class="grp" x="20" y="740" width="620" height="410" rx="10" fill="#f7f7f7"/>
+  <text class="grp-title" x="34" y="764">Событие РАЙОНА р1 — только вверх</text>
+
+  <rect class="box" x="265" y="790" width="130" height="40" rx="6"/>
+  <text class="box-text" x="330" y="815">ЦЕНТР</text>
+  <rect class="box" x="105" y="910" width="130" height="40" rx="6"/>
+  <text class="box-text" x="170" y="935">ОКРУГ A</text>
+  <rect class="box" x="425" y="910" width="130" height="40" rx="6"/>
+  <text class="box-text" x="490" y="935">ОКРУГ B</text>
+  <rect class="box src" x="105" y="1030" width="130" height="40" rx="6"/>
+  <text class="box-text" x="170" y="1055">РАЙОН р1</text>
+  <rect class="box" x="425" y="1030" width="130" height="40" rx="6"/>
+  <text class="box-text" x="490" y="1055">РАЙОН р2</text>
+
+  <path class="edge" d="M170,1030 V950"/>
+  <text class="lbl" x="178" y="995">sync.р1.A</text>
+  <path class="edge" d="M200,910 L300,830"/>
+  <text class="lbl" x="255" y="880">sync.A.центр</text>
+  <path class="no" d="M235,930 H425"/>
+  <text class="lbl-no" x="330" y="922">нет: только вверх</text>
+  <path class="no" d="M490,950 V1030"/>
+
+  <text class="note" x="34" y="1105">р1 → ОКРУГ A → ЦЕНТР. ОКРУГ A оставляет событие себе и пересылает в ЦЕНТР;</text>
+  <text class="note" x="34" y="1125">чужой ОКРУГ B и РАЙОН р2 его не получают.</text>
+
+  <!-- Правая панель: справочник из ЦЕНТРА -->
+  <rect class="grp" x="660" y="740" width="620" height="410" rx="10" fill="#f7f7f7"/>
+  <text class="grp-title" x="674" y="764">Справочник КНСИ из ЦЕНТРА — всем</text>
+
+  <rect class="box src" x="905" y="790" width="130" height="40" rx="6"/>
+  <text class="box-text" x="970" y="815">ЦЕНТР</text>
+  <rect class="box" x="745" y="910" width="130" height="40" rx="6"/>
+  <text class="box-text" x="810" y="935">ОКРУГ A</text>
+  <rect class="box" x="1065" y="910" width="130" height="40" rx="6"/>
+  <text class="box-text" x="1130" y="935">ОКРУГ B</text>
+  <rect class="box" x="745" y="1030" width="130" height="40" rx="6"/>
+  <text class="box-text" x="810" y="1055">РАЙОН р1</text>
+  <rect class="box" x="1065" y="1030" width="130" height="40" rx="6"/>
+  <text class="box-text" x="1130" y="1055">РАЙОН р2</text>
+
+  <path class="edge" d="M940,830 L840,910"/>
+  <text class="lbl-c" x="852" y="866">sync.центр.A</text>
+  <path class="edge" d="M1000,830 L1100,910"/>
+  <text class="lbl-c" x="1092" y="866">sync.центр.B</text>
+  <path class="edge" d="M810,950 V1030"/>
+  <text class="lbl" x="818" y="995">sync.A.р1</text>
+  <path class="edge" d="M1130,950 V1030"/>
+  <text class="lbl" x="1138" y="995">sync.B.р2</text>
+  <path class="no" d="M875,930 H1065"/>
+  <text class="lbl-no" x="970" y="922">между ОКРУГАМИ копий нет</text>
+
+  <text class="note" x="674" y="1105">ЦЕНТР пишет напрямую во все ОКРУГА; каждый ОКРУГ пересылает только</text>
+  <text class="note" x="674" y="1125">своим РАЙОНАМ — туда, куда источник не достаёт сам.</text>
+</svg>
