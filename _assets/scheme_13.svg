@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200" font-family="Arial, Helvetica, sans-serif" font-size="12">
+  <title>Алгоритм применения межузлового события об информационном объекте</title>
+  <desc>Блок-схема: что СПО на узле-получателе делает с событием об объекте (ADR-0092, ADR-0093). Шаги совпадают с описанием в заметке «Правила слияния информационных объектов», §4.1.
+1. Событие об объекте из внутреннего топика; топики опрашиваются по порядку created → updated → deleted.
+2. Объект есть у себя? Нет → создать из события (полное состояние; updated раньше created — по тестам, Q-089) → сохранить.
+3. Способ слияния (sync.merge): WHOLE — целиком, FIELDS — по полям.
+4. WHOLE: версия события = версии у себя? Да → дубль, пропустить.
+5. WHOLE, режим «а» (sync.mode=A): побеждает большая метка HLC, при равенстве — псевдоним узла; проигравшая версия — в журнал отброшенных правок.
+6. WHOLE, режим «б» (sync.mode=B): вектор события новее — применить; старее — пропустить; несравнимы — объект «в конфликте», обе версии хранятся.
+7. FIELDS: проверки на дубль нет; каждая единица слияния (поле, группа, элемент списка, значение множества, flag_actual_action) сливается отдельно: значения множества — п. 10, остальные — по режиму.
+8. FIELDS, режим «а»: значение с большей меткой HLC единицы; перезаписанное значение — в журнал отброшенных правок; удаление решает метка flag_actual_action, правка удалённый объект не возвращает.
+9. FIELDS, режим «б»: от каждой стороны остаются версии, которые другая сторона не видела; одна версия — берётся она; несколько — конфликт по единице, набор спорных версий хранится и передаётся. У flag_actual_action и элемента list_key правка неудалённого объекта даёт версию «жив»: «жив» и «удалён» вместе — конфликт, несколько версий с одним значением — нет.
+10. Значение множества, оба режима (OR-Set): метки добавления объединяются; метка с признаком «удалён» хотя бы у одной стороны — «удалён»; значение есть, пока есть метка без признака «удалён»; несколько меток — не конфликт.
+11. Проверка итога функцией СПО, если по объекту нет конфликта; без отката: нарушено → местная пометка «нарушено правило», журнал, оповещение; пометка снимается, когда проверка проходит; пока есть конфликт — проверка не запускается, пометка снимается; автоматически исправляет только домашний узел.
+12. Сохранить объект, версию и метки в одной транзакции; обновить последнюю метку HLC СПО по правилу получения.
+13. Есть конфликт? Нет → конец. Да → решает домашний узел (человек или правило СПО); итог — новое изменение с меткой, которая видела все спорные версии; другие события конфликт не снимают; на других узлах спорная единица только для чтения, при конфликте по удалению — весь объект или элемент списка.</desc>
+  <metadata>Источник: ADR-0092, ADR-0093, заметка «Правила слияния информационных объектов»</metadata>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+    <style>
+      .b{fill:#eef4fb;stroke:#2b5d8a;stroke-width:1.2}
+      .d{fill:#fff6e0;stroke:#a87400;stroke-width:1.2}
+      .t{fill:#e8f5e9;stroke:#2e7d32;stroke-width:1.2}
+      .c{fill:#fdecea;stroke:#b3261e;stroke-width:1.2}
+      .l{stroke:#333;stroke-width:1.2;fill:none;marker-end:url(#a)}
+      text{fill:#1a1a1a}
+      .y{font-size:11px;fill:#555}
+      .h{font-weight:bold}
+      .n{font-size:11px;font-weight:bold;fill:#2b5d8a}
+      .r{fill:#b3261e}
+    </style>
+  </defs>
+  <rect width="1200" height="1200" fill="#ffffff"/>
+
+  <!-- 1 start -->
+  <rect class="t" x="330" y="20" width="300" height="50" rx="25"/>
+  <text x="480" y="41" text-anchor="middle" class="h">1. Событие об объекте</text>
+  <text x="480" y="58" text-anchor="middle">опрос: created → updated → deleted</text>
+  <path class="l" d="M480,70 V100"/>
+
+  <!-- 2 exists -->
+  <polygon class="d" points="480,100 610,140 480,180 350,140"/>
+  <text x="480" y="137" text-anchor="middle">2. Объект есть</text>
+  <text x="480" y="152" text-anchor="middle">у себя?</text>
+  <path class="l" d="M610,140 H745"/>
+  <text x="680" y="133" class="y">нет</text>
+  <rect class="b" x="745" y="115" width="195" height="50" rx="4"/>
+  <text x="842" y="136" text-anchor="middle">Создать из события</text>
+  <text x="842" y="153" text-anchor="middle" class="y">updated раньше created — Q-089</text>
+  <path class="l" d="M940,140 H1185 V938 H650"/>
+  <path class="l" d="M480,180 V210"/>
+  <text x="488" y="200" class="y">да</text>
+
+  <!-- 3 merge kind -->
+  <polygon class="d" points="480,210 620,250 480,290 340,250"/>
+  <text x="480" y="247" text-anchor="middle">3. Способ слияния</text>
+  <text x="480" y="262" text-anchor="middle">(sync.merge)</text>
+  <path class="l" d="M340,250 H230 V310"/>
+  <text x="250" y="242" class="y">WHOLE — целиком</text>
+  <path class="l" d="M620,250 H705 V310"/>
+  <text x="630" y="242" class="y">FIELDS — по полям</text>
+
+  <!-- WHOLE branch -->
+  <polygon class="d" points="230,310 330,345 230,380 130,345"/>
+  <text x="230" y="342" text-anchor="middle">4. Версия =</text>
+  <text x="230" y="357" text-anchor="middle">версии у себя?</text>
+  <path class="l" d="M130,345 H30 V400"/>
+  <text x="40" y="338" class="y">да</text>
+  <rect class="b" x="5" y="400" width="80" height="34" rx="4"/>
+  <text x="45" y="421" text-anchor="middle">Пропустить</text>
+  <path class="l" d="M230,380 V410"/>
+  <text x="238" y="400" class="y">нет</text>
+  <polygon class="d" points="230,410 320,440 230,470 140,440"/>
+  <text x="230" y="444" text-anchor="middle">Режим (sync.mode)</text>
+  <path class="l" d="M140,440 H115 V500"/>
+  <text x="105" y="432" class="y">а</text>
+  <path class="l" d="M320,440 H345 V500"/>
+  <text x="340" y="432" class="y">б</text>
+  <rect class="b" x="20" y="500" width="190" height="100" rx="4"/>
+  <text x="30" y="516" class="n">5</text>
+  <text x="115" y="520" text-anchor="middle">Побеждает большая</text>
+  <text x="115" y="536" text-anchor="middle">метка HLC; при равенстве —</text>
+  <text x="115" y="552" text-anchor="middle">псевдоним узла</text>
+  <text x="115" y="574" text-anchor="middle" class="y">проигравшая версия —</text>
+  <text x="115" y="588" text-anchor="middle" class="y">в журнал отброшенных</text>
+  <rect class="b" x="235" y="500" width="215" height="100" rx="4"/>
+  <text x="245" y="516" class="n">6</text>
+  <text x="345" y="520" text-anchor="middle">Вектор события:</text>
+  <text x="345" y="536" text-anchor="middle">новее — применить;</text>
+  <text x="345" y="552" text-anchor="middle">старее — пропустить;</text>
+  <text x="345" y="572" text-anchor="middle" class="r">несравнимы — «в конфликте»,</text>
+  <text x="345" y="588" text-anchor="middle" class="r">обе версии хранятся</text>
+  <path class="l" d="M115,600 V938 H310"/>
+  <path class="l" d="M345,600 V910"/>
+
+  <!-- FIELDS branch -->
+  <rect class="b" x="560" y="310" width="290" height="60" rx="4"/>
+  <text x="570" y="326" class="n">7</text>
+  <text x="705" y="330" text-anchor="middle">Без проверки на дубль; по каждой единице:</text>
+  <text x="705" y="347" text-anchor="middle" class="y">поле, группа, элемент списка,</text>
+  <text x="705" y="361" text-anchor="middle" class="y">значение множества, flag_actual_action</text>
+  <path class="l" d="M705,370 V390"/>
+  <polygon class="d" points="705,390 805,418 705,446 605,418"/>
+  <text x="705" y="415" text-anchor="middle">Значение</text>
+  <text x="705" y="430" text-anchor="middle">множества?</text>
+  <path class="l" d="M805,418 H1060 V470"/>
+  <text x="820" y="410" class="y">да</text>
+  <path class="l" d="M705,446 V470"/>
+  <text x="713" y="462" class="y">нет</text>
+  <polygon class="d" points="705,470 790,498 705,526 620,498"/>
+  <text x="705" y="502" text-anchor="middle">Режим</text>
+  <path class="l" d="M620,498 H585 V550"/>
+  <text x="595" y="490" class="y">а</text>
+  <path class="l" d="M790,498 H815 V550"/>
+  <text x="800" y="490" class="y">б</text>
+  <rect class="b" x="490" y="550" width="190" height="140" rx="4"/>
+  <text x="500" y="566" class="n">8</text>
+  <text x="585" y="572" text-anchor="middle">Значение с большей</text>
+  <text x="585" y="588" text-anchor="middle">меткой HLC единицы</text>
+  <text x="585" y="610" text-anchor="middle" class="y">перезаписанное — в журнал</text>
+  <text x="585" y="624" text-anchor="middle" class="y">отброшенных правок;</text>
+  <text x="585" y="646" text-anchor="middle" class="y">удаление решает метка</text>
+  <text x="585" y="660" text-anchor="middle" class="y">flag_actual_action; правка</text>
+  <text x="585" y="674" text-anchor="middle" class="y">удалённый не возвращает</text>
+  <rect class="b" x="695" y="550" width="240" height="170" rx="4"/>
+  <text x="705" y="566" class="n">9</text>
+  <text x="815" y="572" text-anchor="middle">Остаются версии каждой стороны,</text>
+  <text x="815" y="588" text-anchor="middle">которые другая не видела;</text>
+  <text x="815" y="604" text-anchor="middle">одна — берётся она;</text>
+  <text x="815" y="624" text-anchor="middle" class="r">несколько — конфликт по единице,</text>
+  <text x="815" y="640" text-anchor="middle" class="r">спорные версии хранятся</text>
+  <text x="815" y="656" text-anchor="middle" class="r">и передаются</text>
+  <text x="815" y="678" text-anchor="middle" class="y">flag_actual_action, элемент list_key:</text>
+  <text x="815" y="692" text-anchor="middle" class="y">правка неудалённого — версия «жив»;</text>
+  <text x="815" y="706" text-anchor="middle" class="r" font-size="11">«жив» и «удалён» вместе — конфликт</text>
+  <rect class="b" x="950" y="470" width="220" height="150" rx="4"/>
+  <text x="960" y="486" class="n">10</text>
+  <text x="1060" y="492" text-anchor="middle">Значение множества,</text>
+  <text x="1060" y="508" text-anchor="middle">оба режима (OR-Set):</text>
+  <text x="1060" y="528" text-anchor="middle" class="y">метки добавления объединяются;</text>
+  <text x="1060" y="543" text-anchor="middle" class="y">метка «удалён» хотя бы у одной</text>
+  <text x="1060" y="558" text-anchor="middle" class="y">стороны — «удалён»;</text>
+  <text x="1060" y="573" text-anchor="middle" class="y">значение есть, пока есть</text>
+  <text x="1060" y="588" text-anchor="middle" class="y">метка без «удалён»;</text>
+  <text x="1060" y="606" text-anchor="middle" class="y">несколько меток — не конфликт</text>
+  <path class="l" d="M585,690 V750"/>
+  <path class="l" d="M815,720 V750"/>
+  <path class="l" d="M1060,620 V797 H1000"/>
+  <rect class="b" x="540" y="750" width="460" height="95" rx="4"/>
+  <text x="550" y="766" class="n">11</text>
+  <text x="770" y="770" text-anchor="middle">Проверка итога функцией СПО, если нет конфликта</text>
+  <text x="770" y="788" text-anchor="middle" class="y">без отката: нарушено → местная пометка «нарушено правило»,</text>
+  <text x="770" y="803" text-anchor="middle" class="y">журнал, оповещение; снимается, когда проверка проходит;</text>
+  <text x="770" y="818" text-anchor="middle" class="y">пока есть конфликт — не запускается, пометка снимается;</text>
+  <text x="770" y="833" text-anchor="middle" class="y">автоматически исправляет только домашний узел</text>
+  <path class="l" d="M770,845 V880 H600 V910"/>
+
+  <!-- 12 save -->
+  <rect class="t" x="310" y="910" width="340" height="56" rx="4"/>
+  <text x="480" y="932" text-anchor="middle">12. Сохранить объект, версию и метки</text>
+  <text x="480" y="950" text-anchor="middle" class="y">одна транзакция; обновить HLC СПО по правилу получения</text>
+  <path class="l" d="M480,966 V990"/>
+
+  <!-- 13 conflict? -->
+  <polygon class="d" points="480,990 590,1025 480,1060 370,1025"/>
+  <text x="480" y="1029" text-anchor="middle">13. Есть конфликт?</text>
+  <path class="l" d="M370,1025 H190 V1155 H330"/>
+  <text x="250" y="1018" class="y">нет</text>
+  <path class="l" d="M590,1025 H865 V1065"/>
+  <text x="610" y="1018" class="y">да</text>
+  <rect class="c" x="650" y="1065" width="430" height="82" rx="4"/>
+  <text x="865" y="1085" text-anchor="middle">Решает домашний узел: человек или правило СПО</text>
+  <text x="865" y="1102" text-anchor="middle" class="y">итог — новое изменение с меткой, видевшей все спорные версии;</text>
+  <text x="865" y="1118" text-anchor="middle" class="y">другие события конфликт не снимают;</text>
+  <text x="865" y="1134" text-anchor="middle" class="y">на других узлах только для чтения: единица, при удалении — объект</text>
+  <path class="l" d="M700,1147 V1155 H630"/>
+
+  <!-- end -->
+  <rect class="t" x="330" y="1130" width="300" height="50" rx="25"/>
+  <text x="480" y="1160" text-anchor="middle" class="h">Конец</text>
+</svg>
