@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600" font-family="Arial, Helvetica, sans-serif" font-size="13">
+  <title>Копирование дерева T в T′ двумя событиями: проверка векторов struct_seen и attr_seen на получателях</title>
+  <desc>Сценарий 6 заметки «Живой пример — дерево ОШС».
+Узел x: 1600@x копировать T в T′; вставить T′, tA′…tF′, A′…F′, e1′, e2′, d1′, sync_home = x, все метки 1600@x; outbox, ключ T′: 1) TREE_COPY_BODY — пары uuid, struct_seen {h:1500, x:1400, y:1410}; 2) TREE_COPY_ATTRS — пары uuid, attr_seen {h:1000, y:1420}.
+x → z: события 1 и 2, ключ T′.
+x → w: события 1 и 2, ключ T′.
+Узел z: struct_seen T = {h:1500, x:1400, y:1410} — равен, скопировать тело из своего T; attr_seen T = {h:1000, y:1420} — равен, скопировать элементы; T′ совпадает с T′ на x.
+Узел w: struct_seen T = {h:1500, x:1400, y:1310}, y: 1310 меньше 1410 — событие 1 отложить, событие 2 тоже; приходят от y: NODE CREATED F, TREE UPDATED T (1410@y), EQUIPMENT UPDATED e2 (1420@y) — применить; векторы равны — применить события 1 и 2; T′ совпадает с T′ на x.</desc>
+  <metadata>Источник: docs/03_СПО/04_Живой пример — дерево ОШС.md, §9. Нарисовано агентом 2026-11-16.</metadata>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3b6fb6"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1200" height="600" fill="#ffffff"/>
+
+  <g font-weight="bold" font-size="14" text-anchor="middle">
+    <text x="200" y="30">Узел w — отстаёт</text>
+    <text x="600" y="30">Узел x — делает копию</text>
+    <text x="1000" y="30">Узел z — векторы совпали</text>
+  </g>
+  <g stroke="#cccccc" stroke-dasharray="4 4">
+    <line x1="400" y1="15" x2="400" y2="585"/>
+    <line x1="800" y1="15" x2="800" y2="585"/>
+  </g>
+
+  <!-- x -->
+  <g fill="#e3efff" stroke="#3b6fb6">
+    <rect x="430" y="60" width="340" height="44" rx="6"/>
+    <rect x="430" y="124" width="340" height="70" rx="6"/>
+    <rect x="430" y="214" width="340" height="124" rx="6"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="600" y="87" font-weight="bold">1600@x — копировать T в T′</text>
+    <text x="600" y="146">вставить T′, tA′…tF′, A′…F′, e1′, e2′, d1′</text>
+    <text x="600" y="164">sync_home = x, все метки 1600@x</text>
+    <text x="600" y="182">новые uuid генерирует x</text>
+    <text x="600" y="236">outbox, ключ T′, по порядку:</text>
+    <text x="600" y="258" font-weight="bold">1) TREE_COPY_BODY</text>
+    <text x="600" y="276">пары uuid, struct_seen {h:1500, x:1400, y:1410}</text>
+    <text x="600" y="302" font-weight="bold">2) TREE_COPY_ATTRS</text>
+    <text x="600" y="320">пары uuid, attr_seen {h:1000, y:1420}</text>
+  </g>
+
+  <!-- стрелки -->
+  <line x1="770" y1="276" x2="845" y2="276" stroke="#3b6fb6" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="808" y="266" text-anchor="middle" font-size="11" fill="#3b6fb6">1, 2</text>
+  <line x1="430" y1="276" x2="355" y2="276" stroke="#3b6fb6" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="392" y="266" text-anchor="middle" font-size="11" fill="#3b6fb6">1, 2</text>
+
+  <!-- z -->
+  <g fill="#f4f4f4" stroke="#666">
+    <rect x="850" y="214" width="330" height="70" rx="6"/>
+    <rect x="850" y="300" width="330" height="70" rx="6"/>
+    <rect x="850" y="386" width="330" height="44" rx="6" fill="#e4f5e4" stroke="#3c8a3c"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="1015" y="236" font-weight="bold">событие 1: struct_seen T у себя</text>
+    <text x="1015" y="254">{h:1500, x:1400, y:1410} — равен</text>
+    <text x="1015" y="272">скопировать тело из своего T</text>
+    <text x="1015" y="322" font-weight="bold">событие 2: attr_seen T у себя</text>
+    <text x="1015" y="340">{h:1000, y:1420} — равен</text>
+    <text x="1015" y="358">скопировать e1′, e2′, d1′</text>
+    <text x="1015" y="413" font-weight="bold">T′ совпадает с T′ на x</text>
+  </g>
+
+  <!-- w -->
+  <g fill="#f4f4f4" stroke="#666">
+    <rect x="20" y="214" width="330" height="88" rx="6" fill="#fff3dc" stroke="#b07d1a"/>
+    <rect x="20" y="318" width="330" height="88" rx="6" fill="#e4f5e4" stroke="#3c8a3c"/>
+    <rect x="20" y="422" width="330" height="52" rx="6"/>
+    <rect x="20" y="490" width="330" height="44" rx="6" fill="#e4f5e4" stroke="#3c8a3c"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="185" y="236" font-weight="bold">struct_seen T у себя</text>
+    <text x="185" y="254">{h:1500, x:1400, y:1310}</text>
+    <text x="185" y="272">y: 1310 &lt; 1410 → событие 1 отложить,</text>
+    <text x="185" y="290">событие 2 — тоже; партиция не ждёт</text>
+    <text x="185" y="340" font-weight="bold">приходят от y</text>
+    <text x="185" y="358">NODE CREATED F, TREE UPDATED T (1410@y)</text>
+    <text x="185" y="376">EQUIPMENT UPDATED e2 (1420@y)</text>
+    <text x="185" y="394">→ применить</text>
+    <text x="185" y="444">векторы равны →</text>
+    <text x="185" y="462">применить события 1 и 2</text>
+    <text x="185" y="517" font-weight="bold">T′ совпадает с T′ на x</text>
+  </g>
+</svg>

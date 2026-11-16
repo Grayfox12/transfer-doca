@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 740" width="1200" height="740" font-family="Arial, Helvetica, sans-serif" font-size="13">
+  <title>Удаление узла C с каскадом при параллельных правках — одинаковый итог при любом порядке событий</title>
+  <desc>Сценарий 4 заметки «Живой пример — дерево ОШС».
+Узел x: 1400@x удалить узел C; каскад с меткой 1400@x: tC, tE, tB, E, B → false; e1, e2, d1 → false; outbox — одна строка NODE DELETED C.
+Узел y (не видел удаления): 1410@y создать F под C; 1420@y e2.staff_num = 3; outbox по порядку: NODE CREATED F, TREE UPDATED T, EQUIPMENT UPDATED e2.
+Узел z, порядок 1 (первым приходит событие x): 1) NODE DELETED C — C → false, каскад на записи поддерева с метками меньше 1400@x; 2) F, tF — нет у себя, создать: true, 1410@y; 3) e2 — 1420@y больше 1400@x, взять состояние y (true, staff_num 3), версия каскада — в журнал.
+Узел z, порядок 2 (первыми приходят события y): 1) F, tF — true, 1410@y; e2 — true, 3, 1420@y; 2) NODE DELETED C — каскад только на метки меньше 1400@x: tC, tE, tB, E, B, e1, d1 → false; tF, F, e2 — метка больше, остаются true.
+Итог одинаков на x, y и z при любом порядке: C, E, B, e1, d1 — false, 1400@x; F, tF, e2 — true (e2.staff_num = 3). Пользователь не видит C и всё под ним, включая F и e2: удалён предок (наследуемое удаление).</desc>
+  <metadata>Источник: docs/03_СПО/04_Живой пример — дерево ОШС.md, §7. Нарисовано агентом 2026-11-16.</metadata>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#555"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1200" height="740" fill="#ffffff"/>
+
+  <!-- заголовки дорожек -->
+  <g font-weight="bold" font-size="14" text-anchor="middle">
+    <text x="160" y="30">Узел x</text>
+    <text x="450" y="30">Узел y</text>
+    <text x="745" y="30">Узел z — порядок 1</text>
+    <text x="1040" y="30">Узел z — порядок 2</text>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#444">
+    <text x="745" y="48">первым приходит событие x</text>
+    <text x="1040" y="48">первыми приходят события y</text>
+  </g>
+  <g stroke="#cccccc" stroke-dasharray="4 4">
+    <line x1="305" y1="15" x2="305" y2="600"/>
+    <line x1="595" y1="15" x2="595" y2="600"/>
+    <line x1="895" y1="15" x2="895" y2="600"/>
+  </g>
+
+  <!-- узел x -->
+  <g fill="#e3efff" stroke="#3b6fb6">
+    <rect x="25" y="70" width="270" height="44" rx="6"/>
+    <rect x="25" y="134" width="270" height="70" rx="6"/>
+    <rect x="25" y="224" width="270" height="50" rx="6"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="160" y="97" font-weight="bold">1400@x — удалить узел C</text>
+    <text x="160" y="156">каскад, метка 1400@x:</text>
+    <text x="160" y="174">tC, tE, tB, E, B → false</text>
+    <text x="160" y="192">e1, e2, d1 → false</text>
+    <text x="160" y="245">outbox — одна строка:</text>
+    <text x="160" y="263" font-weight="bold">NODE DELETED C</text>
+  </g>
+
+  <!-- узел y -->
+  <g fill="#e4f5e4" stroke="#3c8a3c">
+    <rect x="315" y="70" width="270" height="44" rx="6"/>
+    <rect x="315" y="134" width="270" height="44" rx="6"/>
+    <rect x="315" y="198" width="270" height="88" rx="6"/>
+  </g>
+  <g text-anchor="middle">
+    <text x="450" y="97" font-weight="bold">1410@y — создать F под C</text>
+    <text x="450" y="161" font-weight="bold">1420@y — e2.staff_num = 3</text>
+    <text x="450" y="219">outbox, по порядку:</text>
+    <text x="450" y="237">NODE CREATED F</text>
+    <text x="450" y="255">TREE UPDATED T</text>
+    <text x="450" y="273">EQUIPMENT UPDATED e2</text>
+  </g>
+
+  <!-- стрелки первых событий -->
+  <line x1="160" y1="274" x2="740" y2="346" stroke="#3b6fb6" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+  <line x1="450" y1="286" x2="1035" y2="346" stroke="#3c8a3c" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+
+  <!-- z, порядок 1 -->
+  <rect x="605" y="350" width="280" height="70" rx="6" fill="#e3efff" stroke="#3b6fb6"/>
+  <rect x="605" y="436" width="280" height="52" rx="6" fill="#e4f5e4" stroke="#3c8a3c"/>
+  <rect x="605" y="504" width="280" height="72" rx="6" fill="#e4f5e4" stroke="#3c8a3c"/>
+  <g text-anchor="middle">
+    <text x="745" y="370" font-weight="bold">1. NODE DELETED C (от x)</text>
+    <text x="745" y="388">C → false; каскад на записи</text>
+    <text x="745" y="406">поддерева с меткой меньше 1400@x</text>
+    <text x="745" y="456" font-weight="bold">2. F, tF (от y): нет у себя</text>
+    <text x="745" y="474">создать: true, 1410@y</text>
+    <text x="745" y="524" font-weight="bold">3. e2 (от y): 1420@y &gt; 1400@x</text>
+    <text x="745" y="542">взять состояние y (true, 3);</text>
+    <text x="745" y="560">версия каскада — в журнал</text>
+  </g>
+
+  <!-- z, порядок 2 -->
+  <rect x="905" y="350" width="270" height="70" rx="6" fill="#e4f5e4" stroke="#3c8a3c"/>
+  <rect x="905" y="436" width="270" height="90" rx="6" fill="#e3efff" stroke="#3b6fb6"/>
+  <g text-anchor="middle">
+    <text x="1040" y="370" font-weight="bold">1. F, tF, e2 (от y)</text>
+    <text x="1040" y="388">F, tF — true, 1410@y</text>
+    <text x="1040" y="406">e2 — true, 3, 1420@y</text>
+    <text x="1040" y="456" font-weight="bold">2. NODE DELETED C (от x)</text>
+    <text x="1040" y="474">каскад на метки &lt; 1400@x:</text>
+    <text x="1040" y="492">tC, tE, tB, E, B, e1, d1 → false</text>
+    <text x="1040" y="510">tF, F, e2 — метка больше: true</text>
+  </g>
+
+  <!-- итог -->
+  <rect x="25" y="612" width="1150" height="104" rx="8" fill="#f4f4f4" stroke="#666"/>
+  <g text-anchor="middle">
+    <text x="600" y="640" font-weight="bold" font-size="14">Итог одинаков на x, y и z при любом порядке событий</text>
+    <text x="600" y="664">C, E, B, e1, d1 — false, 1400@x;   F, tF, e2 — true (e2.staff_num = 3)</text>
+    <text x="600" y="690">Пользователь не видит C и всё под ним, включая F и e2: удалён предок (наследуемое удаление)</text>
+  </g>
+</svg>
